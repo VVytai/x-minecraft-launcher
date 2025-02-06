@@ -37,7 +37,7 @@
           v-if="items.length > 0"
           id="left-pane"
           :bench="16"
-          class="visible-scroll h-full max-h-full w-full overflow-auto"
+          class="visible-scroll h-full max-h-full w-full overflow-auto pl-1"
           :items="items"
           :item-height="itemHeight"
           @scroll="onScroll"
@@ -86,9 +86,11 @@
 
 <script lang=ts setup>
 import SplitPane from '@/components/SplitPane.vue'
+import { kDialogModel, useDialogModel } from '@/composables/dialog'
 import { UpgradePlan } from '@/composables/modUpgrade'
 import { useQuery } from '@/composables/query'
 import { vSharedTooltip } from '@/directives/sharedTooltip'
+import { injection } from '@/util/inject'
 import { ProjectEntry } from '@/util/search'
 
 const props = defineProps<{
@@ -115,7 +117,7 @@ watch(() => props.items, (i, old) => {
   if (!old || old.length === 0) {
     if (i.length > 0) {
       const first = i[0]
-      if (typeof first === 'object') {
+      if (typeof first === 'object' && 'id' in first) {
         selectedId.value = first.id
       }
     }
@@ -184,7 +186,9 @@ const onScroll = (e: Event) => {
 }
 
 const selections = inject('selections', () => ref({} as Record<string, boolean>), true)
+const { current } = injection(kDialogModel)
 const onKeyPress = (e: KeyboardEvent) => {
+  if (current.value) return
   // ctrl+a
   if (e.ctrlKey && e.key === 'a') {
     e.preventDefault()
@@ -249,5 +253,9 @@ onUnmounted(() => {
 
 .market-base .v-sheet.v-alert {
     margin: 0px 4px 4px 4px !important;
+}
+
+.market-base .v-virtual-scroll__item {
+  left: 6px;
 }
 </style>
