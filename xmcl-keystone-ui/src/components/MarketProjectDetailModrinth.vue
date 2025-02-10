@@ -19,7 +19,7 @@ const props = defineProps<{
   modrinth?: SearchResultHit
   projectId: string
   installed: ProjectFile[]
-  loaders: string[]
+  loader?: string
   categories: string[]
   gameVersion: string
   allFiles: ProjectFile[]
@@ -51,7 +51,7 @@ const loading = useLoading(isValidatingModrinth, project, projectId)
 
 // Versions
 const { data: versions, isValidating: loadingVersions } = useSWRVModel(
-  getModrinthVersionModel(projectId, undefined, computed(() => props.loaders), computed(() => [props.gameVersion])),
+  getModrinthVersionModel(projectId, undefined, computed(() => props.loader), computed(() => [props.gameVersion])),
   inject(kSWRVConfig))
 const modVersions = useModrinthProjectDetailVersions(versions, computed(() => props.installed))
 
