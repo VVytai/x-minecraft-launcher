@@ -8,7 +8,7 @@ import { useRefreshable } from './refreshable';
 
 export function useModLibCleaner() {
   const unusedMods = shallowRef([] as InstanceFile[])
-  const { mods } = injection(kInstanceModsContext)
+  const { mods, allowLoaders } = injection(kInstanceModsContext)
 
   const { refresh, refreshing, error } = useRefreshable(async () => {
     await calcUnusedLibsMod(mods.value)
@@ -55,26 +55,32 @@ export function useModLibCleaner() {
       return file
     })
 
-    console.log(result.map(r => basename(r.path)))
-
     unusedMods.value = result
   }
 
   function getModsWithNoDependent(mods: ModFile[]) {
     const modsDict = mods.reduce((dict, m) => {
       dict[m.modId] = m
+      for (const alias of Object.keys(m.provideRuntime)) {
+        dict[alias] = m
+      }
       return dict
     }, {} as Record<string, ModFile>)
 
+    const omitted = new Set<ModFile>()
     for (const m of mods) {
-      for (const dep of m.dependencies) {
-        if (modsDict[dep.modId]) {
-          delete modsDict[dep.modId]
+      for (const loader of allowLoaders.value) {
+        const deps = m.dependencies[loader] || []
+        for (const dep of deps) {
+          if (modsDict[dep.modId]) {
+            const mod = modsDict[dep.modId]
+            omitted.add(mod)
+          }
         }
       }
     }
 
-    return Object.values(modsDict)
+    return mods.filter(m => !omitted.has(m))
   }
 
   return {
