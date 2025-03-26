@@ -1,10 +1,10 @@
 import { MinecraftFolder, LaunchOption as ResolvedLaunchOptions, ResolvedVersion, ServerOptions, createMinecraftProcessWatcher, generateArguments, generateArgumentsServer, launch, launchServer } from '@xmcl/core'
-import { AUTHORITY_DEV, GameProcess, LaunchService as ILaunchService, LaunchException, LaunchOptions, LaunchServiceKey, ReportOperationPayload, ResolvedServerVersion } from '@xmcl/runtime-api'
+import { AUTHORITY_DEV, CreateLaunchShortcutOptions, GameProcess, LaunchService as ILaunchService, LaunchException, LaunchOptions, LaunchServiceKey, ReportOperationPayload, ResolvedServerVersion } from '@xmcl/runtime-api'
 import { offline } from '@xmcl/user'
 import { ChildProcess } from 'child_process'
 import { randomUUID } from 'crypto'
 import { constants } from 'fs'
-import { access } from 'fs-extra'
+import { access, writeFile } from 'fs-extra'
 import { EOL } from 'os'
 import { dirname, join } from 'path'
 import { setTimeout } from 'timers/promises'
@@ -12,12 +12,12 @@ import { Inject, LauncherAppKey, PathResolver, kGameDataPath } from '~/app'
 import { EncodingWorker, kEncodingWorker } from '~/encoding'
 import { AbstractService, ExposeServiceKey } from '~/service'
 import { UserTokenStorage, kUserTokenStorage } from '~/user'
+import { normalizeCommandLine } from '~/util/cmd'
 import { isSystemError } from '~/util/error'
 import { VersionService } from '~/version'
 import { LauncherApp } from '../app/LauncherApp'
 import { UTF8 } from '../util/encoding'
 import { LaunchMiddleware } from './LaunchMiddleware'
-import { normalizeCommandLine } from '~/util/cmd'
 
 @ExposeServiceKey(LaunchServiceKey)
 export class LaunchService extends AbstractService implements ILaunchService {
@@ -542,5 +542,13 @@ export class LaunchService extends AbstractService implements ILaunchService {
         name: payload.name,
       })
     }
+  }
+
+  async createLaunchShortcut(options: CreateLaunchShortcutOptions): Promise<void> {
+    await writeFile(join(options.destination + '.xmclaunch'), JSON.stringify({
+      version: 0,
+      instancePath: options.instancePath,
+      userId: options.userId,
+    }))
   }
 }
