@@ -90,6 +90,10 @@ export class UserService extends StatefulService<UserState> implements IUserServ
     })
   }
 
+  async loginModrinth(): Promise<void> {
+    throw new Error('Method not implemented.')
+  }
+
   addYggdrasilService(url: string): Promise<void> {
     return this.yggdrasilSeriveRegistry.addYggdrasilService(url)
   }

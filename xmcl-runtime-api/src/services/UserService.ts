@@ -1,6 +1,6 @@
 import { GameProfile } from '@xmcl/user'
 import { Exception } from '../entities/exception'
-import { GameProfileAndTexture, UserProfile } from '../entities/user.schema'
+import { GameProfileAndTexture, ModrinthUser, UserProfile } from '../entities/user.schema'
 import { GenericEventEmitter } from '../events'
 import { SharedState } from '../util/SharedState'
 import { ServiceKey } from './Service'
@@ -96,6 +96,8 @@ export class UserState {
    */
   users: Record<string, UserProfile> = {}
 
+  otherUsers: ModrinthUser[] = []
+
   userData(data: { users: Record<string, UserProfile> }) {
     this.users = data.users
   }
@@ -115,6 +117,14 @@ export class UserState {
 
   userProfileRemove(userId: string) {
     delete this.users[userId]
+  }
+
+  modrinthUser(user: ModrinthUser) {
+    this.otherUsers = [...this.otherUsers, user]
+  }
+
+  modrinthUserRemove(user: ModrinthUser) {
+    this.otherUsers = this.otherUsers.filter((u) => u.id !== user.id)
   }
 
   userProfile(user: UserProfile) {
@@ -211,6 +221,8 @@ export interface UserService extends GenericEventEmitter<UserServiceEventMap> {
    * @param url The account api url
    */
   removeYggdrasilService(url: string): Promise<void>
+
+  loginModrinth(): Promise<void>
 }
 
 export interface AuthorityMetadata {
@@ -224,7 +236,7 @@ export interface AuthorityMetadata {
   kind: 'builtin' | 'yggdrasil'
   /**
    * The cache for authlib injector compatible api.
-   * 
+   *
    * This is only available for authlib-injector compatible service.
    */
   authlibInjector?: AuthlibInjectorApiProfile
