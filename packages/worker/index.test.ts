@@ -448,7 +448,7 @@ describe('createLazyWorker', () => {
     
     const generator = proxy.asyncGenerator()
     
-    expect(() => generator[Symbol.asyncIterator]()).toThrow('Function not implemented.')
+    expect(generator[Symbol.asyncIterator]()).toBe(generator)
   })
 
   it('should cancel idle timeout when async generator next is called', async () => {
